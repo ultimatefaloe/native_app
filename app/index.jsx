@@ -1,38 +1,24 @@
 import { useState } from "react";
 import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
 import { ShoppingListCard } from "../components/ShoppingListCard";
+import { useShoppingList } from "@/hooks/useShoppingList.hook";
 
-// Move header component outside
-// const ListHeader = ({ value, setValue, handleSubmit }) => (
-//   <View>
-//     <TextInput
-//       placeholder="Add a new task..."
-//       style={styles.input}
-//       value={value}
-//       onChangeText={setValue}
-//       returnKeyType="done"
-//       onSubmitEditing={() => {
-//         handleSubmit(value);
-//         setValue("");
-//       }}
-//     />
-//   </View>
-// );
-
-const ListFooter = () => <Text style={[styles.listHeader]}>End of List</Text>;
+// export type TaskItems = {
+//   id: string;
+//   title: string;
+//   isCompleted: boolean;
+//   completedAt?: Date;
+//   lastupdatedAt?: Date;
+// };
 
 export default function Index() {
   const [value, setValue] = useState("");
-  const [shoppingList, setShoppingList] = useState([ ])
-
-  const handleSubmit = (data) => {
-    console.log("Adding:", data);
-    setShoppingList([...shoppingList, { id: shoppingList.length + 1, name: data }]);
-  };
-
-  // useEffect(() => {
-  //   console.log("Shopping List Updated:", shoppingList);
-  // }, [shoppingList]);
+  const {
+     shoppingList,
+      createShoppingList,
+      deleteShoppingList,
+      updateShoppingList,
+  } = useShoppingList();
 
   return (
     <FlatList
@@ -40,7 +26,13 @@ export default function Index() {
       keyExtractor={(item) => item.id.toString()}
       data={shoppingList}
       extraData={shoppingList}
-      renderItem={({ item }) => <ShoppingListCard item={item} />}
+      renderItem={({ item }) => (
+        <ShoppingListCard
+          item={item}
+          onDelete={deleteShoppingList}
+          onUpdate={updateShoppingList}
+        />
+      )}
       ListHeaderComponent={
         <View>
           <TextInput
@@ -50,13 +42,17 @@ export default function Index() {
             onChangeText={setValue}
             returnKeyType="done"
             onSubmitEditing={() => {
-              handleSubmit(value);
+              createShoppingList(value);
               setValue("");
             }}
           />
         </View>
       }
-      ListFooterComponent={<ListFooter />}
+      ListEmptyComponent={
+        <View style={styles.emptyList}>
+          <Text style={styles.emptyText}>Your Task List Is Empty</Text>
+        </View>
+      }
     />
   );
 }
@@ -86,5 +82,15 @@ const styles = StyleSheet.create({
     margin: 10,
     paddingHorizontal: 10,
     borderRadius: 5,
+  },
+  emptyList: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 50,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: "red",
   },
 });

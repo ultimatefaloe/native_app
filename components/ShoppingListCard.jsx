@@ -1,40 +1,76 @@
-import { Text, View, StyleSheet, Pressable } from "react-native";
+import {
+  Text,
+  View,
+  StyleSheet,
+  Pressable,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useState } from "react";
 
-export function ShoppingListCard({ item }) {
-  const [completed, setCompleted] = useState(false);
-  const { name, id } = item;
+export function ShoppingListCard({ item, onDelete, onUpdate }) {
+  // const [checked, setChecked] = useState(false);
+  const { name, id, isCompleted, createdAt, lastupdatedAt } = item;
+
+  const deleteHandler = () => {
+    Alert.alert(
+      "Delete Shopping Item",
+      `Are you sure you want to delete "${name}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => onDelete(id),
+        },
+      ],
+    );
+  };
+
+  const toggleChecked = () => {
+    // setChecked(!checked);
+    onUpdate(id);
+  };
 
   return (
-    <View style={styles.container}>
-      <Pressable
-        onPress={() => setCompleted(!completed)}
-        style={styles.leftSection}
-      >
-        {completed ? (
-          <Feather name="check-circle" size={24} color="black" />
+    <Pressable
+      onPress={toggleChecked}
+      style={[styles.container, isCompleted && styles.completedContainer]}
+    >
+      <View style={styles.leftSection}>
+        {isCompleted ? (
+          <Feather name="check-circle" size={24} color="gray" />
         ) : (
-          <MaterialIcons
-            name="radio-button-unchecked"
-            size={24}
-            color="black"
-          />
+          <MaterialIcons name="radio-button-unchecked" size={24} color="blue" />
         )}
 
-        <Text style={styles.text}>{name}</Text>
-      </Pressable>
+        <View>
+          <Text style={[styles.text, isCompleted && styles.strikethrough]}>
+            {name}
+          </Text>
+          <Text
+            style={[
+              styles.dateTime,
+              isCompleted && styles.completedDateTime,
+            ]}
+          >
+            {isCompleted
+              ? `Completed at: ${lastupdatedAt.toLocaleString()}`
+              : `Created at: ${createdAt.toLocaleString()}`}
+          </Text>
+        </View>
+      </View>
 
-      <Pressable
-        onPress={() => alert(`Delete item with id: ${id}`)}
+      <TouchableOpacity
+        onPress={deleteHandler}
         hitSlop={10}
         style={styles.deleteBtn}
       >
         <AntDesign name="delete" size={24} color="red" />
-      </Pressable>
-    </View>
+      </TouchableOpacity>
+    </Pressable>
   );
 }
 
@@ -46,6 +82,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     flexDirection: "row",
     alignItems: "center",
+  },
+
+  // checkedContainer: {
+  //   backgroundColor: "lightgray",
+  // },
+  completedContainer: {
+    backgroundColor: "skyblue",
   },
 
   leftSection: {
@@ -63,5 +106,18 @@ const styles = StyleSheet.create({
 
   text: {
     fontSize: 20,
+    color: "blue",
+  },
+  dateTime: {
+    fontSize: 8,
+    color: "blue",
+  },
+
+  strikethrough: {
+    textDecorationLine: "line-through",
+    color: "gray",
+  },
+  completedDateTime: {
+    color: "gray",
   },
 });
