@@ -6,7 +6,6 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const AlbumCard = ({ album, onDelete, onUpdate }) => {
   const { id, title } = album;
-  console.log(album);
   return (
     <View style={styles.card}>
       <View style={styles.header}>

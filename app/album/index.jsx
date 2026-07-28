@@ -6,10 +6,12 @@ import {
   View,
   ActivityIndicator,
   Pressable,
-  Modal
+  Modal,
 } from "react-native";
 import AlbumCard from "../../components/AlbumCard";
 import Feather from "@expo/vector-icons/Feather";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import AlbumForm from "@/components/AlbumForm";
 
 export default function Album() {
   const [albums, setAlbums] = useState([]);
@@ -18,7 +20,7 @@ export default function Album() {
 
   const fetchAlbums = async () => {
     setIsLoading(true);
-    await fetch("https://jsonplaceholder.typicode.com/albums")
+    await fetch("https://jsonplaceholder.typicode.com/albums?userId=10")
       .then((res) => res.json())
       .then((data) => {
         setAlbums(data);
@@ -71,17 +73,30 @@ export default function Album() {
           </View>
         }
       />
-      <Pressable onPress={() => setIsModalVisible(true)} style={styles.fabButton}>
+
+      <Pressable
+        onPress={() => setIsModalVisible(true)}
+        style={styles.fabButton}
+      >
         <Feather name="plus-circle" size={24} color="#ffffff" />
       </Pressable>
+
       <Modal
-      visible={isModalVisible}
-      animationType="slide"
-      onRequestClose={() => setIsModalVisible(false)}
+        visible={isModalVisible}
+        animationType="slide"
+        onRequestClose={() => setIsModalVisible(false)}
+        style={styles.backdrop}
       >
         <View>
-          <Text>This is the modal content</Text>
+          <Pressable
+            onPress={() => setIsModalVisible(false)}
+            style={[styles.closeModal]}
+          >
+            <AntDesign name="close-circle" size={24} color="black" />
+          </Pressable>
         </View>
+
+        <AlbumForm refetch={fetchAlbums} onClose={() => setIsModalVisible(false)} />
       </Modal>
     </View>
   );
@@ -97,6 +112,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 50,
   },
+  centerContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   listHeader: {
     color: "blue",
     fontSize: 24,
@@ -109,7 +129,6 @@ const styles = StyleSheet.create({
     height: 40,
     borderColor: "gray",
     borderWidth: 1,
-    margin: 10,
     paddingHorizontal: 10,
     borderRadius: 5,
   },
@@ -138,5 +157,29 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 4.5,
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "85%",
+    height: 80, // Explicit, reduced height
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 20,
+    gap: 10,
+  },
+  closeModal: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+  },
+  button: {
+    paddingVertical: 10,
+    borderRadius: 5,
+    marginBottom: 10,
   },
 });
