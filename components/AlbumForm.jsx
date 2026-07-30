@@ -1,34 +1,19 @@
 import React, { useState } from "react";
 import { StyleSheet, Text, View, Button, TextInput } from "react-native";
 
-const AlbumForm = ({ refetch, onClose }) => {
-  const [title, setTitle] = useState("");
+const AlbumForm = ({ album, handleSubmit, handleUpdate }) => {
+  const [title, setTitle] = useState(album ? album.title : "");
 
-  const handleSubmit = async () => {
+  const saveHandler = async (id) => {
     const payload = {
       title,
       userId: 10,
     };
 
-    try {
-      const res = await fetch("https://jsonplaceholder.typicode.com/albums", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if(!res.ok){
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
-      const data = await res.json();
-      console.log("Added album:", data);
-      refetch(); // Call the refetch function to update the album list
-      onClose(); // Close the modal after successful submission
-    } catch (error) {
-      console.error("Error adding album:", error);
+    if (album && album.id) {
+      handleUpdate(album.id, payload);
+    } else {
+      await handleSubmit(payload);
     }
   };
 
@@ -39,6 +24,7 @@ const AlbumForm = ({ refetch, onClose }) => {
           <Text>Title:</Text>
           <TextInput
             style={styles.input}
+            value={title}
             placeholder="Enter album title"
             onChangeText={(t) => setTitle(t)}
             keyboardType="default"
@@ -48,8 +34,8 @@ const AlbumForm = ({ refetch, onClose }) => {
 
         <Button
           style={[styles.button]}
-          onPress={handleSubmit}
-          title="Add Album"
+          onPress={saveHandler}
+          title="Save Album"
         />
       </View>
     </View>

@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Pressable,
   Modal,
+  Alert,
 } from "react-native";
 import AlbumCard from "../../components/AlbumCard";
 import Feather from "@expo/vector-icons/Feather";
@@ -17,6 +18,7 @@ export default function Album() {
   const [albums, setAlbums] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedAlbum, setSelectedAlbum] = useState(null);
 
   const fetchAlbums = async () => {
     setIsLoading(true);
@@ -37,8 +39,83 @@ export default function Album() {
     fetchAlbums();
   }, []);
 
-  const deleteAlbum = () => {};
-  const updateAlbum = () => {};
+  const createAlbum = async (payload) => {
+    try {
+      const res = await fetch("https://jsonplaceholder.typicode.com/albums", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      setAlbums((prevAlbums) => [...prevAlbums, data]);
+      setIsModalVisible(false); // Close the modal after successful submission
+      refetch(); // Call the refetch function to update the album list
+      onClose(); // Close the modal after successful submission
+    } catch (error) {
+      console.error("Error adding album:", error);
+    }
+  };
+  const deleteAlbum = async (id) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `https://jsonplaceholder.typicode.com/albums/${id}`,
+        {
+          method: "DELETE",
+        },
+      );
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      setAlbums((prevAlbums) => prevAlbums.filter((album) => album.id !== id));
+    } catch (err) {
+      Alert.alert("Error deleting album", err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const updateAlbum = async (id, data) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(
+        `https://jsonplaceholder.typicode.com/albums/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        },
+      );
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const resData = await res.json();
+      setAlbums((prevAlbums) =>
+        prevAlbums.map((album) => (album.id === id ? resData : album)),
+      );
+      setIsModalVisible(false);
+    } catch (err) {
+      Alert.alert("Error updating album", err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUpdateSelect = (album) => {
+    setSelectedAlbum(album);
+    setIsModalVisible(true);
+  }
 
   if (isLoading) {
     return (
@@ -64,7 +141,8 @@ export default function Album() {
           <AlbumCard
             album={item}
             onDelete={deleteAlbum}
-            onUpdate={updateAlbum}
+            // onSelect={handleUpdateSelect}
+            onUpdate={handleUpdateSelect}
           />
         )}
         ListLoadingComponent={
@@ -96,7 +174,11 @@ export default function Album() {
           </Pressable>
         </View>
 
-        <AlbumForm refetch={fetchAlbums} onClose={() => setIsModalVisible(false)} />
+        <AlbumForm
+          album={selectedAlbum}
+          handleSubmit={createAlbum}
+          handleUpdate={updateAlbum}
+        />
       </Modal>
     </View>
   );
